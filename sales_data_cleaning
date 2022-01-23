@@ -1,0 +1,66 @@
+# Importing CSV's into pgAdmin
+# This had to be done for each year (2013-2020) but the columns were identical each year thus the process was easy to replicate and repeated for each year.
+# While there were quirks unique to each year's data, I will be focusing specifically on year 2013 and will include additional steps taken in subsequent years if necessary.
+
+CREATE TABLE beet_2013
+                      (date DATE,
+                      time_zone TEXT,
+                      time VARCHAR,
+                      category TEXT,
+                      item TEXT,
+                      sku NUMERIC,
+                      qty NUMERIC,
+                      price_point_name TEXT,
+                      modifiers_applied TEXT,
+                      gross_sales MONEY,
+                      net_sales MONEY,
+                      payment_id VARCHAR,
+                      device_name TEXT,
+                      details VARCHAR,
+                      customer_id VARCHAR,
+                      customer_name VARCHAR,
+                      customer_reference_id VARCHAR,
+                      event_type TEXT,
+                      location TEXT,
+                      unit TEXT,
+                      count NUMERIC)
+                      
+COPY beet_2013 to '/Users/Pickle/Documents/data analytics/Beet Box Data/Item Sales'
+delimiter ',' csv header;                      
+
+# The goal of this project is clean up the item sales data so I can visualize it in Tableau.
+# This requires dropping several columns which are irrelevant for our purposes and take too much of my storage space on Tableau.
+
+ALTER TABLE beet_2013
+DROP COLUMN "Time Zone",
+DROP COLUMN	"SKU",
+DROP COLUMN "Payment ID",
+DROP COLUMN "Device Name",
+DROP COLUMN "Notes",
+DROP COLUMN "Details",
+DROP COLUMN "Dining Option",
+DROP COLUMN "Customer ID",
+DROP COLUMN "Customer Name",
+DROP COLUMN "Customer Reference ID"
+
+# Converting date column
+# Originally date was listed YYYY-MM-DD, for my purposes I am only interested in the year, however, 
+# it would be too severe to cut month and day from data, especially if I ever wanted to use the date for another project.
+
+ALTER TABLE beet_2013
+ALTER COLUMN date TYPE DATE USING to_date(date, 'MM-DD-YY')
+
+# Updating qty column.
+# The POS would record quantity based how items were categorized. Since items would be sold at different prices for half dozen or dozen, 
+# Square would record the qty of a half dozen donuts as 1 (ie: one order of a half dozen donuts).  
+
+UPDATE beet_2013
+SET qty = qty * 6
+WHERE "Price Point Name" = 'Half dozen'
+
+UPDATE beet_2013
+SET qty = qty * 12
+WHERE "Price Point Name" = 'Dozen'
+
+
+
