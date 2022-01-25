@@ -1,6 +1,7 @@
 # Importing CSV's into pgAdmin
 # This had to be done for each year (2013-2020) but the columns were identical each year thus the process was easy to replicate and repeated for each year.
 # While there were quirks unique to each year's data, I will be focusing specifically on year 2013 and will include additional steps taken in subsequent years if necessary.
+# The 2019 data reflected the most accurate POS categorization of all items sold and served as the template for ammending previous data sets. 
 
 CREATE TABLE beet_2013
                       (date DATE,
@@ -61,6 +62,25 @@ WHERE "Price Point Name" = 'Half dozen'
 UPDATE beet_2013
 SET qty = qty * 12
 WHERE "Price Point Name" = 'Dozen'
+
+# Investigating item sales listed as custom amounts.
+# This is where things got really messy, particularly in the early years before there were user controls on the POS.
+
+SELECT *
+FROM beet_2013
+WHERE item = 'Custom Amount'
+
+# After running this query, some lines would come up with clues in the price_point_name or category column and the items could be updated accordingly.
+# The total gross sales of items listed as custom amount were 10% in 2013 alone! However, subsequent years the custom amount gross sales comprised only 1-2% of total gross sales.
+
+SELECT sum(gross_sales), (
+      SELECT sum(gross_sales) AS custom_gross
+      FROM beet_2013
+      WHERE item = 'Custom Amount')
+FROM beet_2013
+
+# Since the purpose of this project is to provide clean data for visualizations, and not hardcore financial analysis, I decided to remove custom amounts.
+
 
 
 
